@@ -1,35 +1,30 @@
-from fastapi import FastAPI
 import os
 from supabase import create_client
+from fastapi import FastAPI
 
-# Initialize FastAPI
 app = FastAPI()
 
-# Get Supabase credentials from environment variables
+# Print environment variables for debugging
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
-# Validate Supabase credentials
+print(f"SUPABASE_URL: {SUPABASE_URL}")  # Debugging
+print(f"SUPABASE_KEY: {SUPABASE_KEY[:5]}********")  # Debugging (partially hidden for security)
+
 if not SUPABASE_URL or not SUPABASE_KEY:
     raise ValueError("❌ Missing Supabase credentials! Check Railway environment variables.")
 
-# Create Supabase client
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 @app.get("/")
 def read_root():
-    return {"message": "FastAPI is running on Railway with Supabase!"}
+    return {"message": "FastAPI is running with Supabase!"}
 
-@app.get("/races")  # ✅ Make sure this matches your test URL
+@app.get("/races")
 def get_races():
-    try:
-        response = supabase.table("Races").select("*").execute()  # ✅ Ensure "Races" matches Supabase
-        return response.data
-    except Exception as e:
-        return {"error": str(e)}
+    response = supabase.table("races").select("*").execute()
+    return response.data  # Ensure we return only the data
 
 if __name__ == "__main__":
     import uvicorn
-    port = int(os.getenv("PORT", 8000))  # Get the PORT from environment
-    uvicorn.run(app, host="0.0.0.0", port=port)
-
+    uvicorn.run(app, host="0.0.0.0", port=int(os.getenv("PORT", 8000)))
