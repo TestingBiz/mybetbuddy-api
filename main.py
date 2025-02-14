@@ -18,11 +18,12 @@ def get_races():
         response = supabase.table("races").select("id, date, location, horses").execute()
         data = response.data
 
-        # Convert 'horses' JSONB field into a proper list
+        # Ensure 'horses' JSONB field is **properly parsed** into a structured list
         for race in data:
-            race["horses"] = json.loads(race["horses"])  # Convert stringified JSON to list
+            if isinstance(race["horses"], str):  # If it's still a string, convert it
+                race["horses"] = json.loads(race["horses"])
 
-        return data
+        return data  # Cleanly formatted JSON
 
     except Exception as e:
         return {"error": str(e)}
