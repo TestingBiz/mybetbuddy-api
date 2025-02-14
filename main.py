@@ -1,43 +1,52 @@
 from fastapi import FastAPI
+from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from supabase import create_client
 import os
+import json
 
+# ✅ Initialize FastAPI
 app = FastAPI()
 
-# Load Supabase credentials from environment variables
+# ✅ Allow cross-origin requests (important for Bolt.ai & frontend)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Change this to specific domains if needed
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# ✅ Supabase credentials
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
-# Ensure Supabase credentials exist
 if not SUPABASE_URL or not SUPABASE_KEY:
-    raise ValueError("❌ Missing Supabase credentials! Check Railway environment variables.")
+    raise ValueError("❌ Missing Supabase credentials! Check your environment variables.")
 
-# Create Supabase client
+# ✅ Create Supabase client
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
+# ✅ Fetch races from Supabase (UPDATED FIX)
+def get_races_from_supabase():
+    try:
+        response = supabase.table("races").select("id, date, location, horses (horse, trainer, jockey, owner, age, sex, weight, draw, sire, dam)").execute()
+        races = response.data  # Extract data correctly
+        return races
+    except Exception as e:
+        raise ValueError(f"❌ Supabase API Error: {str(e)}")
+
+# ✅ API Endpoint: Fetch all races
 @app.get("/races")
 def get_races():
-    """ Fetch all races with related horses from Supabase """
     try:
-        # Fetch races
-        races_response = supabase.table("races").select("id, date, location").execute()
-        races = races_response.data
-
-        if not races:
-            return {"message": "No races found"}
-
-        # Fetch horses linked to each race
-        for race in races:
-            race_id = race["id"]
-            horses_response = (
-                supabase.table("horses")
-                .select("horse, trainer, jockey, owner, age, sex, weight, draw, sire, dam")
-                .eq("race_id", race_id)
-                .execute()
-            )
-            race["horses"] = horses_response.data  # Attach horses to each race
-
-        return {"races": races}
-
+        races = get_races_from_supabase()
+        formatted_json = json.dumps({"races": races}, indent=4)  # Adds proper indentation
+        return JSONResponse(content=formatted_json, media_type="application/json")
     except Exception as e:
-        return {"error": str(e)}
+        return JSONResponse(content={"error": str(e)}, status_code=500)
+
+# ✅ Root route
+@app.get("/")
+def root():
+    return {"message": "MyBetBuddy API is running!"}
