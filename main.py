@@ -2,25 +2,23 @@ from fastapi import FastAPI
 import os
 from supabase import create_client
 
+# Initialize FastAPI app
 app = FastAPI()
 
-# Load Supabase credentials from Railway environment variables
+# Get Supabase credentials from environment variables
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+
+# Connect to Supabase
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 @app.get("/")
 def read_root():
     return {"message": "FastAPI is running on Railway with Supabase!"}
 
-@app.get("/trainers")
-def get_trainers():
-    """Fetch trainers from Supabase."""
-    response = supabase.table("trainers").select("*").execute()
+# NEW ENDPOINT: Fetch races from Supabase
+@app.get("/races")
+def get_races():
+    response = supabase.table("races").select("*").execute()
     return response.data
-
-if __name__ == "__main__":
-    import uvicorn
-    port = int(os.getenv("PORT", 8000))  # Use PORT from env or default to 8000
-    uvicorn.run(app, host="0.0.0.0", port=port)
 
