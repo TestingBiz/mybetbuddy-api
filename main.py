@@ -9,6 +9,6 @@ def read_root():
 
 if __name__ == "__main__":
     import uvicorn
-    port = int(os.getenv("PORT", 8000))  # Use PORT from env or default to 8000
+    port = 8000  # Hardcode the port instead of using os.getenv
+    print(f"🚀 Running on port: {port}")  # Debugging log
     uvicorn.run(app, host="0.0.0.0", port=port)
-
