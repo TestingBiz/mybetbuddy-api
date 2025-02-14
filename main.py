@@ -1,27 +1,28 @@
-import os
 from fastapi import FastAPI
+import os
 from supabase import create_client
+import json
 
 app = FastAPI()
 
-# Retrieve Supabase credentials from environment variables
+# Supabase credentials
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
-if not SUPABASE_URL or not SUPABASE_KEY:
-    raise ValueError("❌ Missing Supabase credentials! Check Railway environment variables.")
-
-# Create Supabase client
+# Connect to Supabase
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 @app.get("/races")
 def get_races():
     try:
-        # Query the races table
-        response = supabase.table("races").select("*").execute()
-        data = response.data  
+        response = supabase.table("races").select("id, date, location, horses").execute()
+        data = response.data
 
-        return data  # FastAPI will automatically convert JSONB fields correctly
+        # Convert 'horses' JSONB field into a proper list
+        for race in data:
+            race["horses"] = json.loads(race["horses"])  # Convert stringified JSON to list
+
+        return data
 
     except Exception as e:
         return {"error": str(e)}
