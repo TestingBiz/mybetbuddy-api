@@ -4,12 +4,9 @@ from fastapi import FastAPI
 
 app = FastAPI()
 
-# Print environment variables for debugging
+# Load Supabase credentials
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
-
-print(f"SUPABASE_URL: {SUPABASE_URL}")  # Debugging
-print(f"SUPABASE_KEY: {SUPABASE_KEY[:5]}********")  # Debugging (partially hidden for security)
 
 if not SUPABASE_URL or not SUPABASE_KEY:
     raise ValueError("❌ Missing Supabase credentials! Check Railway environment variables.")
@@ -22,8 +19,15 @@ def read_root():
 
 @app.get("/races")
 def get_races():
-    response = supabase.table("races").select("*").execute()
-    return response.data  # Ensure we return only the data
+    """ Fetch all races from the Supabase database and print debugging info """
+    response = supabase.table("Races").select("*").execute()
+    
+    print(f"🔍 Supabase Response: {response}")  # Debugging Output
+    
+    if response.data is None:
+        return {"error": "No data returned. Check if RLS is blocking access or table name is incorrect."}
+    
+    return response.data  # Return actual data
 
 if __name__ == "__main__":
     import uvicorn
