@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 import os
+import json  # Import JSON to clean up formatting
 from supabase import create_client, Client
 
 # Initialize FastAPI app
@@ -25,11 +26,16 @@ def read_root():
 def get_races():
     """
     Fetch all races from the Supabase 'races' table.
-    Returns the data in a structured JSON response.
+    Cleans up JSON formatting for a properly structured response.
     """
     try:
         response = supabase.table("races").select("*").execute()
-        return JSONResponse(content=response.data, status_code=200)
+        if response.data:
+            # Convert JSONB fields (like 'horses') into proper JSON objects
+            formatted_data = json.loads(json.dumps(response.data))
+            return JSONResponse(content=formatted_data, status_code=200)
+        else:
+            return JSONResponse(content={"message": "No races found"}, status_code=200)
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=500)
 
