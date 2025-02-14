@@ -15,15 +15,19 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 @app.get("/races")
 def get_races():
     try:
+        # Explicitly select fields
         response = supabase.table("races").select("id, date, location, horses").execute()
         data = response.data
 
-        # Ensure 'horses' JSONB field is **properly parsed** into a structured list
+        # Ensure JSONB column is parsed correctly
         for race in data:
             if isinstance(race["horses"], str):  # If it's still a string, convert it
-                race["horses"] = json.loads(race["horses"])
+                try:
+                    race["horses"] = json.loads(race["horses"])
+                except json.JSONDecodeError:
+                    pass  # If decoding fails, keep it as is
 
-        return data  # Cleanly formatted JSON
+        return {"races": data}
 
     except Exception as e:
         return {"error": str(e)}
