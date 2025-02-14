@@ -20,7 +20,7 @@ def read_root():
 @app.get("/races")
 def get_races():
     """ Fetch all races from the Supabase database and print debugging info """
-    response = supabase.table("Races").select("*").execute()
+    response = supabase.table("races").select("*").execute()
     
     print(f"🔍 Supabase Response: {response}")  # Debugging Output
     
