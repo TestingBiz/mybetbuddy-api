@@ -4,9 +4,16 @@ from supabase import create_client, Client
 
 app = FastAPI()
 
+# Debugging: Print Supabase URL
+print("SUPABASE_URL:", os.getenv("SUPABASE_URL"))
+
 # Load Supabase credentials from environment variables
-SUPABASE_URL = os.getenv("https://jjxuctxvqgbigygmwdxx.supabase.co")
-SUPABASE_KEY = os.getenv("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpqeHVjdHh2cWdiaWd5Z213ZHh4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzkzMTUyNjUsImV4cCI6MjA1NDg5MTI2NX0.3QRlomjWXCiDfZRrBLavqIumYgDGclE1gO6a0CGSUtE")
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+
+if not SUPABASE_URL or not SUPABASE_KEY:
+    raise ValueError("❌ Missing Supabase credentials! Check Railway environment variables.")
+
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 @app.get("/")
