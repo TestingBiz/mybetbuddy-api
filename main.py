@@ -1,33 +1,35 @@
 from fastapi import FastAPI
 import os
-from supabase import create_client, Client
+from supabase import create_client
 
+# Initialize FastAPI
 app = FastAPI()
 
-# Load environment variables
+# Get Supabase credentials from environment variables
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
-# Ensure credentials exist
+# Validate Supabase credentials
 if not SUPABASE_URL or not SUPABASE_KEY:
-    raise ValueError("🚨 Missing Supabase credentials! Check Railway environment variables.")
+    raise ValueError("❌ Missing Supabase credentials! Check Railway environment variables.")
 
-# Initialize Supabase client
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+# Create Supabase client
+supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 @app.get("/")
 def read_root():
     return {"message": "FastAPI is running on Railway with Supabase!"}
 
-@app.get("/races")
+@app.get("/races")  # ✅ Make sure this matches your test URL
 def get_races():
     try:
-        # ✅ Corrected: Using "Races" with capital R
-        response = supabase.table("Races").select("*").execute()
-        data = response.data  # Extract actual data from Supabase response
-        print("✅ Successfully fetched races:", data)  # Debugging log
-        return data
+        response = supabase.table("Races").select("*").execute()  # ✅ Ensure "Races" matches Supabase
+        return response.data
     except Exception as e:
-        print("❌ Error fetching races:", str(e))  # Debugging log
         return {"error": str(e)}
+
+if __name__ == "__main__":
+    import uvicorn
+    port = int(os.getenv("PORT", 8000))  # Get the PORT from environment
+    uvicorn.run(app, host="0.0.0.0", port=port)
 
