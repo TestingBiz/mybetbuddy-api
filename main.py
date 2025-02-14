@@ -1,6 +1,6 @@
+from fastapi import FastAPI
 import os
 import uvicorn
-from fastapi import FastAPI
 
 app = FastAPI()
 
@@ -9,7 +9,6 @@ def read_root():
     return {"message": "FastAPI is running!"}
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8000))  # Use Railway's PORT or fallback to 8000
+    port = int(os.getenv("PORT", 8000))  # Get PORT from environment, default to 8000
     uvicorn.run(app, host="0.0.0.0", port=port)
-
 
