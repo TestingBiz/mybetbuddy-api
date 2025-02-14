@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 import os
-import json  # Import JSON to clean up formatting
+import orjson  # Use orjson for fast, clean JSON formatting
 from supabase import create_client, Client
 
 # Initialize FastAPI app
@@ -31,9 +31,8 @@ def get_races():
     try:
         response = supabase.table("races").select("*").execute()
         if response.data:
-            # Convert JSONB fields (like 'horses') into proper JSON objects
-            formatted_data = json.loads(json.dumps(response.data))
-            return JSONResponse(content=formatted_data, status_code=200)
+            # Use orjson to format JSON without escape characters
+            return JSONResponse(content=orjson.loads(orjson.dumps(response.data)), status_code=200)
         else:
             return JSONResponse(content={"message": "No races found"}, status_code=200)
     except Exception as e:
